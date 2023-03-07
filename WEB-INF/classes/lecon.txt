@@ -1,0 +1,21 @@
+    void service(HttpServletRequest req, HttpServletResponse res): Cette méthode est appelée par le conteneur de servlet pour gérer une requête entrante. Cette méthode détermine quelle méthode HTTP (GET, POST, PUT, DELETE, etc.) a été utilisée dans la requête et appelle la méthode correspondante pour gérer la requête.
+
+    void doGet(HttpServletRequest req, HttpServletResponse res): Cette méthode est appelée lorsque le client envoie une requête HTTP GET. Dans cette méthode, vous pouvez récupérer les paramètres de requête, les en-têtes, le corps de la requête, etc.
+
+    void doPost(HttpServletRequest req, HttpServletResponse res): Cette méthode est appelée lorsque le client envoie une requête HTTP POST. Dans cette méthode, vous pouvez récupérer les paramètres de requête, les en-têtes, le corps de la requête, etc.
+
+    void doPut(HttpServletRequest req, HttpServletResponse res): Cette méthode est appelée lorsque le client envoie une requête HTTP PUT. Dans cette méthode, vous pouvez récupérer les paramètres de requête, les en-têtes, le corps de la requête, etc.
+
+    void doDelete(HttpServletRequest req, HttpServletResponse res): Cette méthode est appelée lorsque le client envoie une requête HTTP DELETE. Dans cette méthode, vous pouvez récupérer les paramètres de requête, les en-têtes, le corps de la requête, etc.
+
+    void doHead(HttpServletRequest req, HttpServletResponse res): Cette méthode est appelée lorsque le client envoie une requête HTTP HEAD. Cette méthode est généralement utilisée pour récupérer les en-têtes de réponse sans récupérer le corps de la réponse.
+
+    void doOptions(HttpServletRequest req, HttpServletResponse res): Cette méthode est appelée lorsque le client envoie une requête HTTP OPTIONS. Cette méthode est généralement utilisée pour récupérer les options de serveur pour une ressource donnée.
+
+    void doTrace(HttpServletRequest req, HttpServletResponse res): Cette méthode est appelée lorsque le client envoie une requête HTTP TRACE. Cette méthode est généralement utilisée pour récupérer une trace des requêtes et des réponses entre le client et le serveur.
+
+    void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException: Cette méthode appelle la méthode doGet(), doPost(), doPut(), doDelete(), doHead(), doOptions() ou doTrace() en fonction de la méthode HTTP utilisée dans la requête.
+
+    void init() throws ServletException: Cette méthode est appelée lorsque le servlet est initialisé. Vous pouvez utiliser cette méthode pour effectuer des opérations d'initialisation, telles que l'ouverture de connexions de base de données ou la lecture de fichiers de configuration.
+
+    void destroy(): Cette méthode est appelée lorsque le servlet est détruit. Vous pouvez utiliser cette méthode pour effectuer des opérations de nettoyage, telles que la fermeture de connexions de base de données ou la libération de ressources.
