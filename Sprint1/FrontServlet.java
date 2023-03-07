@@ -6,9 +6,11 @@ import java.lang.String;
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Vector;
+import etu002087.framework.*;;
 
 public class FrontServlet extends HttpServlet{
-    String baseurl=new String();
+    String baseurl;
+    HashMap<String,Mapping> MappingUrls ;
 
     public void init() throws ServletException {
         baseurl=this.getInitParameter("base_url_site");//definition de la base url de l'aplication dans le web.xml
