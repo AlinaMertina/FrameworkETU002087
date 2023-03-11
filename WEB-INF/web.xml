@@ -10,12 +10,12 @@
     <!-- .............. M E S  P R O J E T S........................ -->
     <servlet>
         <servlet-name>Urlmapping</servlet-name>
-        <servlet-class>etu002087.framework.servlet.Url</servlet-class>
+        <servlet-class>etu002087.framework.servlet.FrontServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>Urlmapping</servlet-name>
-        <url-pattern>/Url</url-pattern>
+        <url-pattern>/*</url-pattern>
     </servlet-mapping>
     <!-- ............................................................ -->
 

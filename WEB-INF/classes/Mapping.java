@@ -7,5 +7,15 @@ import java.lang.String;
 public class Mapping {
     String className;
     String Method;
-   
+   public Mapping(String c,String m){
+        className=c;
+        Method=m;
+   }
+   public String getclassName(){
+        return className;
+   }
+   public String getMethod(){
+        return Method;
+   }
+
 }  

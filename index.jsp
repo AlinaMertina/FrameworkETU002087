@@ -8,6 +8,8 @@
 </head>
 <body>
     <form action="Url" method="GET">
+        <input type="text" name="class" placeholder="nomclass">
+        <input type="text" name="method" placeholder="nommethod">
         <input type="submit" value="valider">
     </form>
 </body>
