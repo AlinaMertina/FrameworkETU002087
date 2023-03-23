@@ -1,1 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                      https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+  version="5.0"
+  metadata-complete="true">
+
+    <!-- .............. M E S  P R O J E T S........................ -->
+    <servlet>
+        <servlet-name>Url_mapping</servlet-name>
+        <servlet-class>etu002087.framework.servlet.FrontServlet</servlet-class>
+        <init-param>
+            <param-name>racine_D</param-name>
+            <param-value>/home/mertina/Bureau/L2/Web_Dynamique/tomcat1/apache-tomcat-10.0.27/webapps/test_framework/WEB-INF/classes/etu002087</param-value>
+            <description>chemin absolut par apport au fichier</description>
+        </init-param>
+        <init-param>
+            <param-name>base_url_site</param-name>
+            <param-value>http://localhost:8080/test_framework/</param-value>
+            <description>bade url de votre cite</description>
+        </init-param>
+        <init-param>
+            <param-name>split_class</param-name>
+            <param-value>/home/mertina/Bureau/L2/Web_Dynamique/tomcat1/apache-tomcat-10.0.27/webapps/test_framework/WEB-INF/classes/</param-value>
+            <description>pour avoir la class </description>
+        </init-param>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Url_mapping</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+    <!-- ............................................................ -->
+
+</web-app>
  

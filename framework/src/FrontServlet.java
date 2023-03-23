@@ -6,7 +6,8 @@ import java.lang.String;
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Vector;
-import etu002087.framework.*;;
+import etu002087.framework.*;
+
 
 public class FrontServlet extends HttpServlet{
     String baseurl;
@@ -36,32 +37,41 @@ public class FrontServlet extends HttpServlet{
                         }
                     } 
                 }catch(Exception e){
-                }
-                    
+                }    
             }
     }
     protected  void processRequest(HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException {
         PrintWriter out = res.getWriter();
         String lien =req.getRequestURL().toString();
         String[] controleur= lien.split(baseurl);
-        if(MappingUrls.get(controleur[1])!=null){
-            try{
-                Class c = Class.forName(MappingUrls.get(controleur[1]).getclassName()); 
-                for(Method method :c.getDeclaredMethods()){
-                    if(method.getName().compareTo(MappingUrls.get(controleur[1]).getMethod())==0){
-                        //invoke fonction 
-                        method.invoke(c.getConstructor().newInstance(), (Object[])null);
-                    }
-                }
-            }catch(Exception e){
-                out.println(e);
-            }
-           
+        res.setContentType("text/html");
+        res.setCharacterEncoding("UTF-8");
+        if(lien.contains(".jsp")){
+            res.sendRedirect(lien);
         }
+        if(controleur.length>0 ){
+            if(MappingUrls.get(controleur[1])!=null){
+                try{
+                    Class c = Class.forName(MappingUrls.get(controleur[1]).getclassName()); 
+                    for(Method method :c.getDeclaredMethods()){
+                        if(method.getName().compareTo(MappingUrls.get(controleur[1]).getMethod())==0){
+                            //invoke fonction 
+                            String nomjs = (String) method.invoke(c.getConstructor().newInstance(), (Object[])null);
+                            out.println(nomjs);
+                            RequestDispatcher dispatcher = req.getRequestDispatcher(nomjs);
+                            dispatcher.forward(req, res);
+                        }
+                    }
+                }catch(Exception e){
+                    out.println(e);
+                }
+            }
+
+        }
+        
         
     } 
     public void doPost(HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException {
-        
         processRequest(req, res);
     }
     public void doGet(HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException {
