@@ -7,7 +7,9 @@ import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Vector;
 import etu002087.framework.*;
-
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.*;
 
 public class FrontServlet extends HttpServlet{
     String baseurl;
@@ -40,6 +42,54 @@ public class FrontServlet extends HttpServlet{
                 }    
             }
     }
+    public Object set_atribue_class(Object o,HttpServletRequest req)throws ServletException, IOException{
+            Class c = o.getClass();
+            try {
+                for(Method method :c.getDeclaredMethods()){
+                    if(method.isAnnotationPresent(Set_value_jspannotation.class)){
+                        Set_value_jspannotation annotation_method=method.getAnnotation(Set_value_jspannotation.class);
+                        //verification caractere valide
+                        if(method.getParameterTypes()[0]==Integer.class){
+                            method.invoke(o,Integer.parseInt(req.getParameter(annotation_method.nom_atribue())));
+                        }
+                        else if(method.getParameterTypes()[0]==Double.class){
+                            method.invoke(o,Double.parseDouble(req.getParameter(annotation_method.nom_atribue())));
+                        }
+                        else if(method.getParameterTypes()[0]==String.class){
+                            method.invoke(o,req.getParameter(annotation_method.nom_atribue()));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            return o;
+    }
+    public void redirecte(ModelView nomjs ,HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException{
+        HashMap<String,Object> valuer = nomjs.getItem();
+        for(String key : valuer.keySet()) {
+            req.setAttribute(key, valuer.get(key));
+        }
+        RequestDispatcher dispatcher = req.getRequestDispatcher(nomjs.getnompage());
+        dispatcher.forward(req, res);
+    }
+    public void methode_class(String indexmap,Class  c,HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException{
+        for(Method method :c.getDeclaredMethods()){
+            try {
+                if(method.getName().compareTo(MappingUrls.get(indexmap).getMethod())==0){
+                    Object object_cl=set_atribue_class(c.getConstructor().newInstance(),req);
+                    if(method.getReturnType()==ModelView.class){
+                        redirecte((ModelView )method.invoke(object_cl, (Object[])null),req,res);
+                    }else{
+                        method.invoke(object_cl, (Object[])null);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+    }
+    
     protected  void processRequest(HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException {
         PrintWriter out = res.getWriter();
         out.println("togna");
@@ -52,28 +102,13 @@ public class FrontServlet extends HttpServlet{
         if(controleur.length>0 ){
             if(MappingUrls.get(controleur[1])!=null){
                 try{
-                    Class c = Class.forName(MappingUrls.get(controleur[1]).getclassName()); 
-                    for(Method method :c.getDeclaredMethods()){
-                        if(method.getName().compareTo(MappingUrls.get(controleur[1]).getMethod())==0){
-                            //invoke fonction 
-                            ModelView nomjs = (ModelView) method.invoke(c.getConstructor().newInstance(), (Object[])null);
-                            // get attribu HashMap
-                            HashMap<String,Object> valuer = nomjs.getItem();
-                            for(String key : valuer.keySet()) {
-                                out.println(key);
-                                req.setAttribute(key, valuer.get(key));
-                            }
-                            RequestDispatcher dispatcher = req.getRequestDispatcher(nomjs.getnompage());
-                            dispatcher.forward(req, res);
-                        }
-                    }
+                    methode_class(controleur[1],Class.forName(MappingUrls.get(controleur[1]).getclassName()),req,res);
                 }catch(Exception e){
                     out.println(e);
                 }
             }
 
         }
-        
         
     } 
     public void doPost(HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException {
@@ -82,6 +117,7 @@ public class FrontServlet extends HttpServlet{
     public void doGet(HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException {
         processRequest(req, res);
     }
+    
     public void getclass(String nompackage,Vector<String>vector,String extension){
         File dossiermere=new File(nompackage);
         File[] liste = dossiermere.listFiles();
@@ -97,4 +133,35 @@ public class FrontServlet extends HttpServlet{
         }
        
     }
+   
+    // public HashMap<String,Object> value_get(String url){
+    //     HashMap<String,Object> resulta=new HashMap<String,Object>();
+    //     String[] valeur=url.split("&");
+    //     for(int i=0;i<valeur.length;i++){
+    //         String[] section=valeur[i].split("=");//varible qui contient le valeur 
+    //         if(section.length==2){
+    //             resulta.put(section[0],string_to_objet(section[1]));
+    //         }else{
+    //             return new HashMap<String,Object>();
+    //         }
+    //     }
+    //     return resulta;
+    // }
+    public Object string_to_objet(String str){
+        if(str.matches(".*[a-zA-Z].*")==true){
+            return str;
+        }else{
+            if(str.contains(".")){
+                return Double.parseDouble(str);
+            }
+            else if(str.contains(",")){
+                str = str.replace(",", ".");
+                return Double.parseDouble(str);
+            }
+            else{
+                return Integer.parseInt(str);
+            }
+        }
+    }
+    
 }
