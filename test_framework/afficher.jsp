@@ -3,7 +3,8 @@
 
 
 <%
-    Float age = (Float) request.getAttribute("test_Float");
+    String age = (String) request.getAttribute("nom_adulte");
+    String age1 = (String) request.getAttribute("age_adulte");
 %>
 
 <!DOCTYPE html>
@@ -17,6 +18,7 @@
 <body>
     <h1>Bonjour</h1>
     <% out.println(age); %>
+    <% out.println(age1); %>
         
 </body>
 </html> 

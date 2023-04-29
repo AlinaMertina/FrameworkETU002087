@@ -8,12 +8,15 @@
 </head>
 <body>
     <h1>Bonjour</h1>
-    <form action="save" method="post">
+    <form action="fonction" method="post">
         Age:<input type="number" name="age" value="20">
         Nom:<input type="text" name="nom" value="Mertina">
         Salaire:<input type="number" name="salaire" value="1000">
         Float:<input type="text" name="test_Float" value="1000">
         Date de naissance:<input type="date" name="date_naissance" >
+        <input type="hidden" name="nom_adulte" value="claudia">
+        <input type="hidden" name="age_adulte" value="20">
+
         <input type="submit" value="valider">
     </form>
 </body>

@@ -29,7 +29,6 @@ public class FrontServlet extends HttpServlet{
         this.getclass(nompakage,classdefin,".class");//avoir tout le classe
             for(String cheminclass :classdefin){
                 try{
-                   
                     String string = (cheminclass.split(this.getInitParameter("split_class")))[1].replace('/','.');
                     if(string.contains("annotation")!=true){
                         String[] st = string.split(".class");
@@ -41,7 +40,8 @@ public class FrontServlet extends HttpServlet{
                             }
                         }
                     } 
-                }catch(Exception e){
+                }
+                catch(Exception e){
                 }    
             }
         
@@ -95,12 +95,21 @@ public class FrontServlet extends HttpServlet{
         for(Method method :c.getDeclaredMethods()){
             try {
                 if(method.getName().compareTo(MappingUrls.get(indexmap).getMethod())==0){
+                    Urlannotation annotation_method=method.getAnnotation(Urlannotation.class);
                     Object object_cl=set_atribue_class(c.getConstructor().newInstance(),req,res);
                     if(method.getReturnType()==ModelView.class){
-                        out.println(method.getName());
-                        redirecte((ModelView )method.invoke(object_cl, (Object[])null),req,res);
+                        
+                        if(method.getParameterCount()>0){
+                            redirecte( (ModelView )method.invoke(object_cl,alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out)),req,res);
+                        }else{
+                            redirecte( (ModelView )method.invoke(object_cl, (Object[])null), req,res);
+                        }
                     }else{
-                        method.invoke(object_cl, (Object[])null);
+                        if(method.getParameterCount()>0){
+                            method.invoke(object_cl,alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out));
+                        }else{
+                            method.invoke(object_cl, (Object[])null);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -108,7 +117,35 @@ public class FrontServlet extends HttpServlet{
             }
         }
     }
-     //fonction qui va regarder si l'index proposer par le client existe ou pas ou si il y a un erreur
+    public Object[] alimentation_parametre_fonction(Method fonction,String[] nomparametre,HttpServletRequest req,PrintWriter out){
+        Object[] resulta = new Object[1];
+            try{
+                Class[] parametre = fonction.getParameterTypes();
+                resulta=new Object[parametre.length];
+                for(int i=0;i<parametre.length;i++){
+                    if(parametre[i]==Integer.class){
+                        resulta[i] =(Integer) valide_Integer(req.getParameter(nomparametre[i]));
+                    }
+                    else if(parametre[i]==Double.class){
+                        resulta[i] = (Double) valide_double(req.getParameter(nomparametre[i]));
+                    }
+                    else if(parametre[i]==String.class){
+                        resulta[i] = req.getParameter(nomparametre[i]);
+                    }
+                    else if(parametre[i]==Date.class){
+                        resulta[i] =(Date) string_to_objet(req.getParameter(nomparametre[i]),out);
+                    }
+                    else if(parametre[i]==Float.class){
+                        resulta[i]=(Float) valide_Float(req.getParameter(nomparametre[i]));
+                    }
+                }
+
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            return resulta;
+    }
+    //fonction qui va regarder si l'index proposer par le client existe ou pas ou si il y a un erreur
     //cette fonction return l'index de MappingUrls correspondant
     public String get_classe_lien(String url_application){
         String[] section= url_application.split(baseurl);

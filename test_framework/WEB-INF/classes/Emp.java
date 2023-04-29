@@ -59,7 +59,7 @@ public class Emp extends Controleur{
         super();
     }
 
-    @Urlannotation(index = "findAll")
+    @Urlannotation(index = "findAll",nomparametre={})
     public ModelView findAll(){
         ModelView model = new ModelView("/index.jsp");
         Vector<Object[]> tabeemp = new Vector<Object[]>();
@@ -71,19 +71,27 @@ public class Emp extends Controleur{
         model.addItem("nomemp", tabeemp);
         return model;
     }
-    @Urlannotation(index = "insert")
+    @Urlannotation(index = "insert",nomparametre={})
     public ModelView insert(){
         ModelView model = new ModelView("/Formulaire_Employer.jsp");
         return model;
     }
 
 
-    @Urlannotation(index = "save")
+    @Urlannotation(index = "save",nomparametre={})
     public ModelView save(){
         ModelView model = new ModelView("/afficher.jsp");
         model.addItem("test_Float", gettest_Float());
         return model ;
        
     }
+    @Urlannotation(index = "fonction",nomparametre={"nom_adulte","age_adulte"})
+    public ModelView fonction_parametre(String nom_adulte,String age){
+        ModelView model = new ModelView("/afficher.jsp");
+        model.addItem("nom_adulte", nom_adulte);
+        model.addItem("age_adulte", age);
+        return model ;
+    }
+
     
 }  
