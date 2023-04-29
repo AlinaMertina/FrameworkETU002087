@@ -1,0 +1,33 @@
+1-Premierement la structure de votre dossier sera 
+    Nom_dossier-->WEB-INF-->classes-->package java
+                         -->lib
+                         -->web.xml
+                -->les fichier.jsp
+2-Le contenu de votre fichier web.xml devair contenir ce ci
+    <servlet>
+        <servlet-name>Url_mapping</servlet-name>
+        <servlet-class>etu002087.framework.servlet.FrontServlet</servlet-class>
+        <init-param>
+            <param-name>racine_D</param-name>
+            <param-value>CHEMIN ABSOLUT CHEMIN/TOMCAT/WEBAPPS/NOM_DOSSIER/WEB-INF/CLASSES/etu002087</param-value>
+            <description>chemin absolut par apport au fichier</description>
+        </init-param>
+        <init-param>
+            <param-name>base_url_site</param-name>
+            <param-value>http://localhost:8080/NOM_DOSSIER/</param-value>
+            <description>bade url de votre cite</description>
+        </init-param>
+        <init-param>
+            <param-name>split_class</param-name>
+            <param-value>CHEMIN ABSOLUT CHEMIN/TOMCAT/webapps/NOM_DOSSIER/WEB-INF/classes/</param-value>
+            <description>pour avoir la class </description>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Url_mapping</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+3- tout les classes annotation que vous allez cree devrair contenir "annotation"
+4- vous devier cree un fichier .jsp dans le nom est index.jsp pour definire la page par defaut de
+votre projet et mettre @Urlannotation(index = "index") sur la fonction qui va renvoyer la modelView correspandent

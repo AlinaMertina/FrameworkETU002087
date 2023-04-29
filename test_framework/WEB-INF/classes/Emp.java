@@ -11,6 +11,8 @@ public class Emp extends Controleur{
     // Date date_naissance;
     Integer  age;
     Double salaire;
+    Date date_naissance;
+    Float test_Float;
 
     @Set_value_jspannotation(nom_atribue="nom")
     public void setnom(String s){
@@ -24,6 +26,15 @@ public class Emp extends Controleur{
     public void setsalaire(Double d){
         salaire=d;
     } 
+    @Set_value_jspannotation(nom_atribue="test_Float")
+    public void setdate_naissance(Date d){
+        date_naissance=d;
+    } 
+    @Set_value_jspannotation(nom_atribue="test_Float")
+    public void settest_Float(Float d){
+        test_Float=d;
+    } 
+
     public Double getsalaire(){
         return salaire;
     }
@@ -32,6 +43,12 @@ public class Emp extends Controleur{
     }
     public String getnom(){
         return nom;
+    }
+    public Date getdate_naissance(){
+        return date_naissance;
+    }
+    public Float gettest_Float(){
+        return test_Float;
     }
     // @Set_value_jspannotation(nom_atribue="date_naissance")
     // public void setdate_naissance(Date d){
@@ -54,10 +71,19 @@ public class Emp extends Controleur{
         model.addItem("nomemp", tabeemp);
         return model;
     }
+    @Urlannotation(index = "insert")
+    public ModelView insert(){
+        ModelView model = new ModelView("/Formulaire_Employer.jsp");
+        return model;
+    }
+
 
     @Urlannotation(index = "save")
-    public void save(){
-        System.out.println(getnom());
+    public ModelView save(){
+        ModelView model = new ModelView("/afficher.jsp");
+        model.addItem("test_Float", gettest_Float());
+        return model ;
+       
     }
     
 }  

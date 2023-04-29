@@ -21,12 +21,12 @@
             <th>Nom Employer</th>
             <th>Age</th>
         </tr>
-        <% for(int i=0 ;i<tabe.size();i++){ %>
+        <% if(tabe!=null){for(int i=0 ;i<tabe.size();i++){ %>
             <tr>
                 <td> <% out.println((String)tabe.get(i)[0]); %></td>
                 <td> <% out.println((String)tabe.get(i)[1]); %></td>
             </tr>
-        <% } %>
+        <% } }%>
        
     </table>
 </body>

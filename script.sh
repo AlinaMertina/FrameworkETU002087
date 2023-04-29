@@ -8,3 +8,6 @@ cp -r /home/mertina/Bureau/L2/Web_Dynamique/RepertoireDetravailler/Utilisationfr
 cd /home/mertina/Bureau/L2/Web_Dynamique/tomcat1/apache-tomcat-10.0.27/bin
 
 javac -classpath ./framework.jar -d . *.java
+
+CATALINA_HOME=/home/mertina/Bureau/L2/Web_Dynamique/tomcat1/apache-tomcat-10.0.27/
+${CATALINA_HOME}/bin/startup.sh

@@ -10,6 +10,9 @@ import etu002087.framework.*;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 
 public class FrontServlet extends HttpServlet{
     String baseurl;
@@ -23,7 +26,7 @@ public class FrontServlet extends HttpServlet{
         MappingUrls= new HashMap<String,Mapping>();
        //class respensable de prendre recurcivement le class dans le dossier
         Vector<String> classdefin = new Vector<>();
-        this.getclass(nompakage,classdefin,".class");
+        this.getclass(nompakage,classdefin,".class");//avoir tout le classe
             for(String cheminclass :classdefin){
                 try{
                    
@@ -41,27 +44,40 @@ public class FrontServlet extends HttpServlet{
                 }catch(Exception e){
                 }    
             }
+        
     }
-    public Object set_atribue_class(Object o,HttpServletRequest req)throws ServletException, IOException{
+   
+
+    public Object set_atribue_class(Object o,HttpServletRequest req,HttpServletResponse res)throws ServletException, IOException{
+        PrintWriter out = res.getWriter();
             Class c = o.getClass();
             try {
                 for(Method method :c.getDeclaredMethods()){
+                    
                     if(method.isAnnotationPresent(Set_value_jspannotation.class)){
                         Set_value_jspannotation annotation_method=method.getAnnotation(Set_value_jspannotation.class);
                         //verification caractere valide
                         if(method.getParameterTypes()[0]==Integer.class){
-                            method.invoke(o,Integer.parseInt(req.getParameter(annotation_method.nom_atribue())));
+                            method.invoke(o,(Integer) valide_Integer(req.getParameter(annotation_method.nom_atribue())));
                         }
                         else if(method.getParameterTypes()[0]==Double.class){
-                            method.invoke(o,Double.parseDouble(req.getParameter(annotation_method.nom_atribue())));
+                            method.invoke(o,(Double) valide_double(req.getParameter(annotation_method.nom_atribue())));
                         }
                         else if(method.getParameterTypes()[0]==String.class){
-                            method.invoke(o,req.getParameter(annotation_method.nom_atribue()));
+                            method.invoke(o, req.getParameter(annotation_method.nom_atribue()));
                         }
+                        else if(method.getParameterTypes()[0]==Date.class){
+                            Date d=(Date) string_to_objet(req.getParameter(annotation_method.nom_atribue()),out);
+                            method.invoke(o,d);
+                        }
+                        else if(method.getParameterTypes()[0]==Float.class){
+                            method.invoke(o,(Float) valide_Float(req.getParameter(annotation_method.nom_atribue())));
+                        }
+                        
                     }
                 }
             } catch (Exception e) {
-                System.out.println(e);
+                out.println(e);
             }
             return o;
     }
@@ -73,12 +89,15 @@ public class FrontServlet extends HttpServlet{
         RequestDispatcher dispatcher = req.getRequestDispatcher(nomjs.getnompage());
         dispatcher.forward(req, res);
     }
+    
     public void methode_class(String indexmap,Class  c,HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException{
+        PrintWriter out = res.getWriter();
         for(Method method :c.getDeclaredMethods()){
             try {
                 if(method.getName().compareTo(MappingUrls.get(indexmap).getMethod())==0){
-                    Object object_cl=set_atribue_class(c.getConstructor().newInstance(),req);
+                    Object object_cl=set_atribue_class(c.getConstructor().newInstance(),req,res);
                     if(method.getReturnType()==ModelView.class){
+                        out.println(method.getName());
                         redirecte((ModelView )method.invoke(object_cl, (Object[])null),req,res);
                     }else{
                         method.invoke(object_cl, (Object[])null);
@@ -89,25 +108,36 @@ public class FrontServlet extends HttpServlet{
             }
         }
     }
-    
+     //fonction qui va regarder si l'index proposer par le client existe ou pas ou si il y a un erreur
+    //cette fonction return l'index de MappingUrls correspondant
+    public String get_classe_lien(String url_application){
+        String[] section= url_application.split(baseurl);
+        if(section.length>1){
+            if (MappingUrls.get(section[1])==null ){
+                return new String("not_found");
+            }else{
+                return section[1];
+            }
+        }
+        else{
+            return new String("index");
+        }
+    }
+
     protected  void processRequest(HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException {
         PrintWriter out = res.getWriter();
-        out.println("togna");
-        String lien =req.getRequestURL().toString();
-        out.println("lien"+req.getRequestURL().toString());
-        String[] controleur= lien.split(baseurl);
         res.setContentType("text/html");
         res.setCharacterEncoding("UTF-8");
+        String lien =req.getRequestURL().toString();
 
-        if(controleur.length>0 ){
-            if(MappingUrls.get(controleur[1])!=null){
-                try{
-                    methode_class(controleur[1],Class.forName(MappingUrls.get(controleur[1]).getclassName()),req,res);
-                }catch(Exception e){
-                    out.println(e);
-                }
+        // out.println("lien"+req.getRequestURL().toString());
+        String controleur= get_classe_lien(lien) ;
+        if(MappingUrls.get(controleur)!=null){
+            try{
+                methode_class(controleur,Class.forName(MappingUrls.get(controleur).getclassName()),req,res);
+            }catch(Exception e){
+                out.println(e);
             }
-
         }
         
     } 
@@ -117,7 +147,7 @@ public class FrontServlet extends HttpServlet{
     public void doGet(HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException {
         processRequest(req, res);
     }
-    
+//cette fonction prendras tout les classe existant dans le repertoir de travaille du developpeur
     public void getclass(String nompackage,Vector<String>vector,String extension){
         File dossiermere=new File(nompackage);
         File[] liste = dossiermere.listFiles();
@@ -134,23 +164,24 @@ public class FrontServlet extends HttpServlet{
        
     }
    
-    // public HashMap<String,Object> value_get(String url){
-    //     HashMap<String,Object> resulta=new HashMap<String,Object>();
-    //     String[] valeur=url.split("&");
-    //     for(int i=0;i<valeur.length;i++){
-    //         String[] section=valeur[i].split("=");//varible qui contient le valeur 
-    //         if(section.length==2){
-    //             resulta.put(section[0],string_to_objet(section[1]));
-    //         }else{
-    //             return new HashMap<String,Object>();
-    //         }
-    //     }
-    //     return resulta;
-    // }
-    public Object string_to_objet(String str){
+   
+    public Object string_to_objet(String str,PrintWriter out){
+        Object resulta= new Object();
+        if(look_if_string_is_date(str)==true && (str.contains("-")==true ||  str.contains("/")==true) ){
+            
+            int[] date =transfo_date_valide(str,out);
+            out.println("jour"+date[2]);
+            @SuppressWarnings("deprecation")
+            Date d =new Date(date[0],date[1],date[2]);
+            return d;
+        }
         if(str.matches(".*[a-zA-Z].*")==true){
             return str;
-        }else{
+        }
+        return resulta;
+    }
+    public Double valide_double(String str){
+        if (str.matches("^\\d*\\.?\\d+$")==true || str.matches("^\\d*\\,?\\d+$") ){
             if(str.contains(".")){
                 return Double.parseDouble(str);
             }
@@ -158,10 +189,77 @@ public class FrontServlet extends HttpServlet{
                 str = str.replace(",", ".");
                 return Double.parseDouble(str);
             }
-            else{
-                return Integer.parseInt(str);
+        }
+        if (str.matches("^\\d+$")==true){
+            return Double.parseDouble(str);
+        }
+        return 0.0;
+        
+    }
+    public Float valide_Float(String str){
+        if (str.matches("^\\d*\\.?\\d+$")==true || str.matches("^\\d*\\,?\\d+$") ){
+            if(str.contains(".")){
+                return Float.parseFloat(str);
+            }
+            else if(str.contains(",")){
+                str = str.replace(",", ".");
+                return Float.parseFloat(str);
             }
         }
+        if (str.matches("^\\d+$")==true){
+            return Float.parseFloat(str);
+        }
+        return null;
+        
+    }
+    public Integer valide_Integer(String str){
+        if (str.matches("^\\d+$")==true){
+            return  Integer.parseInt(str);
+        }
+        return 0;
     }
     
+    public boolean look_if_string_is_date(String chaine){
+        String regex = "^[0-9/-]+$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(chaine);
+        
+        if (matcher.matches()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public int[] transfo_date_valide(String date,PrintWriter out){
+        int[] resulta = new int[3];
+        String[] date_split=new String[1];
+        
+        if(date.contains("-")==true){
+            date_split=date.split("-");
+        }
+        if(date.contains("/")==true){
+            date_split=date.split("/");
+        }
+        if(date_split.length>2){
+            int[] resul = {Integer.parseInt(date_split[0]),Integer.parseInt(date_split[1]),Integer.parseInt(date_split[2])};
+            return trie_date(resul ,0);
+            
+        }else{
+            return resulta;
+        }
+    }
+    public int[] trie_date(int[] date,int i){
+        int max=date[i];
+        int indice_max=i;
+        for(int a=i;a<date.length;a++){
+            if(max<date[a]){
+                int value_mave=date[i];
+                date[i]=date[a];
+                date[a]=date[i];
+            }
+        }
+        date[1]=date[1];
+        date[2]=date[2];
+        return date;
+    }
 }
