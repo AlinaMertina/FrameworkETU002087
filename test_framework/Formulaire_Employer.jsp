@@ -27,7 +27,7 @@
         <input type="submit" value="valider">
     </form> -->
 
-    <form action="tabeemp" method="post" enctype="multipart/form-data">
+    <form action="tabeemp_singleton" method="post" enctype="multipart/form-data">
         Mertina:<input type="text" name="nomemp[]" value="Mertina">
         <br/>
         Dylan:<input type="text" name="nomemp[]" value="Dylan">

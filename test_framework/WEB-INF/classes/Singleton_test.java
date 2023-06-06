@@ -5,10 +5,13 @@ import etu002087.framework.ModelView;
 import etu002087.framework.Controleur;
 import etu002087.framework.Set_value_jspannotation;
 import etu002087.framework.FileUpload;
+import etu002087.framework.Scopeannotation;
+
 import java.util.Vector;
 import java.io.IOException;
 import java.util.Date;
-public class Emp extends Controleur{
+@Scopeannotation(indication="singleton")
+public class Singleton_test {
     String  nom;
     // Date date_naissance;
     Integer  age;
@@ -24,7 +27,6 @@ public class Emp extends Controleur{
     public void increment(){
         nombre_appel=nombre_appel+1;
     }
-
     @Set_value_jspannotation(nom_atribue="nomemp")
     public void set_liste(String[] l){
         liste=l;
@@ -78,8 +80,7 @@ public class Emp extends Controleur{
     //     date_naissance=d;
     // }     
 
-    public Emp(){
-        super();
+    public Singleton_test(){
         increment();
     }
 
@@ -121,13 +122,14 @@ public class Emp extends Controleur{
         }
         return model ;
     }
-    @Urlannotation(index = "tabeemp",nomparametre={"nomemp"})
+    @Urlannotation(index = "tabeemp_singleton",nomparametre={"nomemp"})
     public ModelView test_table_form(String[] nomemp){
+        increment();
         ModelView model = new ModelView("/liste_emp.jsp");
         model.addItem("nomemp", nomemp);
         model.addItem("nbr", get_nbr_appel());
         return model;
     }
 
-    
-}  
+
+}

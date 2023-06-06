@@ -27,12 +27,14 @@ public class FrontServlet extends HttpServlet{
     String baseurl;
     String nompakage;
     HashMap<String,Mapping> MappingUrls ;
+    HashMap<String,Object> Singleton;
 
     public void init() throws ServletException {
         nompakage=this.getInitParameter("racine_D");
         baseurl=this.getInitParameter("base_url_site");//definition de la base url de l'aplication dans le web.xml
         //alimentation de l'attribut MappingUrls
         MappingUrls= new HashMap<String,Mapping>();
+        Singleton = new HashMap<String,Object>();
        //class respensable de prendre recurcivement le class dans le dossier
         Vector<String> classdefin = new Vector<>();
         this.getclass(nompakage,classdefin,".class");//avoir tout le classe
@@ -42,6 +44,14 @@ public class FrontServlet extends HttpServlet{
                     if(string.contains("annotation")!=true){
                         String[] st = string.split(".class");
                         Class c = Class.forName(st[0]); 
+                        //si la classe est une singleton alors ajouter dans le hashmap
+                        //isAnnotationPresent no nampiasaina mba amatarana oe tena io anatation io marina no amin'le class
+                        if(c.isAnnotationPresent(Scopeannotation.class)){
+                            Scopeannotation identification=(Scopeannotation)c.getAnnotation(Scopeannotation.class);
+                            if(identification.indication().compareTo("singleton")==0){
+                                Singleton.put(c.getName(),null);
+                            }
+                        }
                         for(Method method :c.getDeclaredMethods()){
                             if(method.isAnnotationPresent(Urlannotation.class) ){
                                 Urlannotation index = method.getAnnotation(Urlannotation.class);
@@ -53,6 +63,23 @@ public class FrontServlet extends HttpServlet{
                 catch(Exception e){
                 }    
             }
+        
+    }
+    public Object singleton(Class c, PrintWriter out) throws Exception{
+        String index=c.getName();
+        if(Singleton.containsKey(index)){
+           
+            if(Singleton.get(index)==null){
+                Object o =c.getConstructor().newInstance();
+                Singleton.put(index,o);
+                out.println("content "+index);
+             }
+            return Singleton.get(index);
+        }else{
+            out.println(index);
+            return c.getConstructor().newInstance();
+        }
+        
         
     }
     public Object set_atribue_class(Object o,HttpServletRequest req,HttpServletResponse res)throws ServletException, IOException{
@@ -121,7 +148,7 @@ public class FrontServlet extends HttpServlet{
             try {
                 if(method.getName().compareTo(MappingUrls.get(indexmap).getMethod())==0){
                     Urlannotation annotation_method=method.getAnnotation(Urlannotation.class);
-                    Object object_cl=set_atribue_class(c.getConstructor().newInstance(),req,res);
+                    Object object_cl=set_atribue_class(singleton(c,out),req,res);
                     if(method.getReturnType()==ModelView.class){
                         
                         if(method.getParameterCount()>0){

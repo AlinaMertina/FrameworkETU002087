@@ -1,10 +1,11 @@
 <%@page import="java.lang.String"%>
+<%@page import="java.lang.Integer"%>
 <%@page import="java.util.Date"%>
 
 
 <%
     String[] nomemp= (String[]) request.getAttribute("nomemp");
-    String[] age= (String[]) request.getAttribute("age");
+    Integer nbr= (Integer)request.getAttribute("nbr");
     
 %>
 <!DOCTYPE html>
@@ -21,6 +22,7 @@
         <% out.println(nomemp[0]); %>
         <% out.println(nomemp[1]); %>
         <% out.println(nomemp[2]); %>
+        <% out.println(nbr); %>
        
 </body>
 </html> 
