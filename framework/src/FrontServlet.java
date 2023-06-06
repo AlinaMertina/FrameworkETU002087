@@ -2,6 +2,7 @@ package etu002087.framework.servlet;
 import java.io.*;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.MultipartConfig;
 import java.lang.String;
 import java.lang.reflect.*;
 import java.util.HashMap;
@@ -11,9 +12,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.regex.Pattern;
+
+import javax.print.DocFlavor.STRING;
+
 import java.util.regex.Matcher;
 
 
+@MultipartConfig(
+  fileSizeThreshold = 1024 * 1024,  // Taille de la mémoire tampon pour les parties
+  maxFileSize = 5 * 1024 * 1024,    // Taille maximale pour un fichier individuel
+  maxRequestSize = 10 * 1024 * 1024 // Taille maximale totale de la requête
+)
 public class FrontServlet extends HttpServlet{
     String baseurl;
     String nompakage;
@@ -46,8 +55,6 @@ public class FrontServlet extends HttpServlet{
             }
         
     }
-   
-
     public Object set_atribue_class(Object o,HttpServletRequest req,HttpServletResponse res)throws ServletException, IOException{
         PrintWriter out = res.getWriter();
             Class c = o.getClass();
@@ -73,13 +80,31 @@ public class FrontServlet extends HttpServlet{
                         else if(method.getParameterTypes()[0]==Float.class){
                             method.invoke(o,(Float) valide_Float(req.getParameter(annotation_method.nom_atribue())));
                         }
-                        
+                        else if(method.getParameterTypes()[0]==String[].class){
+                            String[] values=req.getParameterValues(annotation_method.nom_atribue()+"[]");
+                            Object[] ob=new Object[1];
+                            ob[0]=values;
+                            method.invoke(o,ob);
+                        }
+                        else if(method.getParameterTypes()[0]==FileUpload.class){
+                            method.invoke(o,traitement_file_uplaod(req,annotation_method.nom_atribue()));
+                        }
                     }
                 }
             } catch (Exception e) {
                 out.println(e);
             }
             return o;
+    }
+    //fonction qui va traiter les fichier uploader
+    public FileUpload traitement_file_uplaod(HttpServletRequest req,String nom_file)throws ServletException, IOException{
+        try {
+            Part filePart = req.getPart(nom_file);
+            FileUpload file = new FileUpload(filePart.getSubmittedFileName(),filePart.getContentType(),filePart.getSize(),filePart.getInputStream());
+            return file;
+        } catch (Exception e) {
+            return null;
+        } 
     }
     public void redirecte(ModelView nomjs ,HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException{
         HashMap<String,Object> valuer = nomjs.getItem();
@@ -100,9 +125,11 @@ public class FrontServlet extends HttpServlet{
                     if(method.getReturnType()==ModelView.class){
                         
                         if(method.getParameterCount()>0){
-                            redirecte( (ModelView )method.invoke(object_cl,alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out)),req,res);
+                            ModelView m =(ModelView )method.invoke(object_cl,alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out));
+                            redirecte(m ,req,res);
                         }else{
-                            redirecte( (ModelView )method.invoke(object_cl, (Object[])null), req,res);
+                            ModelView m = (ModelView )method.invoke(object_cl, (Object[])null);
+                            redirecte( m, req,res);
                         }
                     }else{
                         if(method.getParameterCount()>0){
@@ -138,10 +165,16 @@ public class FrontServlet extends HttpServlet{
                     else if(parametre[i]==Float.class){
                         resulta[i]=(Float) valide_Float(req.getParameter(nomparametre[i]));
                     }
+                    else if(parametre[i]==String[].class){
+                        resulta[i]=req.getParameterValues(nomparametre[i]+"[]");
+                    }
+                    else if(parametre[i]==FileUpload.class){
+                        resulta[i]=traitement_file_uplaod(req,nomparametre[i]);
+                    }
                 }
 
             } catch (Exception e) {
-                System.out.println(e);
+                out.println(e);
             }
             return resulta;
     }
@@ -218,6 +251,7 @@ public class FrontServlet extends HttpServlet{
         return resulta;
     }
     public Double valide_double(String str){
+        if(str==null){ return null ; }
         if (str.matches("^\\d*\\.?\\d+$")==true || str.matches("^\\d*\\,?\\d+$") ){
             if(str.contains(".")){
                 return Double.parseDouble(str);
@@ -234,6 +268,8 @@ public class FrontServlet extends HttpServlet{
         
     }
     public Float valide_Float(String str){
+        if(str==null){ return  null;}
+            
         if (str.matches("^\\d*\\.?\\d+$")==true || str.matches("^\\d*\\,?\\d+$") ){
             if(str.contains(".")){
                 return Float.parseFloat(str);
@@ -250,6 +286,7 @@ public class FrontServlet extends HttpServlet{
         
     }
     public Integer valide_Integer(String str){
+        if(str==null){ return 0;}
         if (str.matches("^\\d+$")==true){
             return  Integer.parseInt(str);
         }

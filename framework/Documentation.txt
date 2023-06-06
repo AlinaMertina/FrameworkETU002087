@@ -1,3 +1,8 @@
+Version java du framework
+    openjdk version "19.0.2" 2023-01-17
+    OpenJDK Runtime Environment (build 19.0.2+7)
+    OpenJDK 64-Bit Server VM (build 19.0.2+7, mixed mode)
+
 1-Premierement la structure de votre dossier sera 
     Nom_dossier-->WEB-INF-->classes-->package java
                          -->lib
@@ -31,3 +36,14 @@
 3- tout les classes annotation que vous allez cree devrair contenir "annotation"
 4- vous devier cree un fichier .jsp dans le nom est index.jsp pour definire la page par defaut de
 votre projet et mettre @Urlannotation(index = "index") sur la fonction qui va renvoyer la modelView correspandent
+5-chaque annotation Urlannotation devrair resembler a ce  
+    -@Urlannotation(index = "findAll",nomparametre={})
+    nomparametre{} pour le fonction qui ne cotient pas de parametre
+    --@Urlannotation(index = "findAll",nomparametre={"age","prenome","nom_parametre"}) 
+    remarque le nom des  parametre est non castable donc fesez attention au syntaxe
+6-chaque fonction qui a l'annotation Urlannotation devrais retourner une ModelView
+7- type attribu de classe  incrementer  automatiquement 
+(String,Integer,Date,Float,Double)
+8- chaque fonction seteur d'un class devaire avoir l'annotation
+ @Set_value_jspannotation(nom_atribue="nom")
+ avec nom_atribue est le nom attribu de la classe

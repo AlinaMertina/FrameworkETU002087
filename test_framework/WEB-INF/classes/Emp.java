@@ -4,7 +4,9 @@ import etu002087.framework.Urlannotation;
 import etu002087.framework.ModelView;
 import etu002087.framework.Controleur;
 import etu002087.framework.Set_value_jspannotation;
+import etu002087.framework.FileUpload;
 import java.util.Vector;
+import java.io.IOException;
 import java.util.Date;
 public class Emp extends Controleur{
     String  nom;
@@ -13,6 +15,19 @@ public class Emp extends Controleur{
     Double salaire;
     Date date_naissance;
     Float test_Float;
+    FileUpload file;
+    String[] liste;
+    @Set_value_jspannotation(nom_atribue="nomemp")
+    public void set_liste(String[] l){
+        liste=l;
+    }
+    // @Set_value_jspannotation(nom_atribue="file")
+    // public void set_file(FileUpload f){
+    //     file=f;
+    // }
+    public FileUpload get_file(){
+        return file;
+    }
 
     @Set_value_jspannotation(nom_atribue="nom")
     public void setnom(String s){
@@ -26,10 +41,10 @@ public class Emp extends Controleur{
     public void setsalaire(Double d){
         salaire=d;
     } 
-    @Set_value_jspannotation(nom_atribue="test_Float")
-    public void setdate_naissance(Date d){
-        date_naissance=d;
-    } 
+    // @Set_value_jspannotation(nom_atribue="test_Float")
+    // public void setdate_naissance(Date d){
+    //     date_naissance=d;
+    // } 
     @Set_value_jspannotation(nom_atribue="test_Float")
     public void settest_Float(Float d){
         test_Float=d;
@@ -90,7 +105,18 @@ public class Emp extends Controleur{
         ModelView model = new ModelView("/afficher.jsp");
         model.addItem("nom_adulte", nom_adulte);
         model.addItem("age_adulte", age);
+        try {
+            get_file().save_file("/home/mertina/Bureau/L2/Web_Dynamique/RepertoireDetravailler/UtilisationframeWork/test_framework/read.sc");   
+        } catch (IOException e) {
+            System.out.println(e);
+        }
         return model ;
+    }
+    @Urlannotation(index = "tabeemp",nomparametre={"nomemp"})
+    public ModelView test_table_form(String[] nomemp){
+        ModelView model = new ModelView("/liste_emp.jsp");
+        model.addItem("nomemp", nomemp);
+        return model;
     }
 
     

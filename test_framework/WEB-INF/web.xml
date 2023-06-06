@@ -32,6 +32,14 @@
         <servlet-name>Url_mapping</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+    <multipart-config>
+        <!-- Taille maximale totale des parties -->
+        <max-file-size>5242880</max-file-size> <!-- 5 Mo -->
+        <!-- Taille maximale de chaque partie -->
+        <max-request-size>1048576</max-request-size> <!-- 1 Mo -->
+        <!-- Taille maximale de la mémoire tampon pour les parties -->
+        <file-size-threshold>0</file-size-threshold>
+    </multipart-config>
     <!-- ............................................................ -->
 
 </web-app>
