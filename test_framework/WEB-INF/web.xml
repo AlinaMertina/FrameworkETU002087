@@ -26,6 +26,16 @@
             <param-value>/home/mertina/Bureau/L2/Web_Dynamique/tomcat1/apache-tomcat-10.0.27/webapps/test_framework/WEB-INF/classes/</param-value>
             <description>pour avoir la class </description>
         </init-param>
+        <init-param>
+            <param-name>connection</param-name>
+            <param-value>isconnected</param-value>
+            <description>session qui vas indique que l'utilisateur est connecte</description>
+        </init-param>
+        <init-param>
+            <param-name>profil</param-name>
+            <param-value>profil</param-value>
+            <description>nom du session qui va contenir le typde de profile de l'utilisateur</description>
+        </init-param>
     </servlet>
 
     <servlet-mapping>

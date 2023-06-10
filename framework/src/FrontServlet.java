@@ -5,6 +5,7 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.MultipartConfig;
 import java.lang.String;
 import java.lang.reflect.*;
+import java.rmi.server.ObjID;
 import java.util.HashMap;
 import java.util.Vector;
 import etu002087.framework.*;
@@ -12,7 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.regex.Pattern;
-
+import jakarta.servlet.http.HttpSession;
 import javax.print.DocFlavor.STRING;
 
 import java.util.regex.Matcher;
@@ -26,12 +27,16 @@ import java.util.regex.Matcher;
 public class FrontServlet extends HttpServlet{
     String baseurl;
     String nompakage;
+    String sessionname;
+    String sessionprofile;
     HashMap<String,Mapping> MappingUrls ;
     HashMap<String,Object> Singleton;
 
     public void init() throws ServletException {
         nompakage=this.getInitParameter("racine_D");
         baseurl=this.getInitParameter("base_url_site");//definition de la base url de l'aplication dans le web.xml
+        sessionname=this.getInitParameter("connection");
+        sessionprofile=this.getInitParameter("profil");
         //alimentation de l'attribut MappingUrls
         MappingUrls= new HashMap<String,Mapping>();
         Singleton = new HashMap<String,Object>();
@@ -65,22 +70,31 @@ public class FrontServlet extends HttpServlet{
             }
         
     }
+    public void resate(Object o){
+        Class c=o.getClass();
+        try {
+            for(Method method :c.getDeclaredMethods()){
+                Object[] parametre=null;
+                method.invoke(o,parametre);
+            }
+        }catch(Exception e){
+            System.out.println(e);
+        }
+    }
     public Object singleton(Class c, PrintWriter out) throws Exception{
         String index=c.getName();
         if(Singleton.containsKey(index)){
-           
             if(Singleton.get(index)==null){
                 Object o =c.getConstructor().newInstance();
                 Singleton.put(index,o);
                 out.println("content "+index);
              }
+            resate(Singleton.get(index));
             return Singleton.get(index);
         }else{
             out.println(index);
             return c.getConstructor().newInstance();
         }
-        
-        
     }
     public Object set_atribue_class(Object o,HttpServletRequest req,HttpServletResponse res)throws ServletException, IOException{
         PrintWriter out = res.getWriter();
@@ -135,13 +149,29 @@ public class FrontServlet extends HttpServlet{
     }
     public void redirecte(ModelView nomjs ,HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException{
         HashMap<String,Object> valuer = nomjs.getItem();
+        HashMap<String,Object> session_model= nomjs.getsession();
+        HttpSession session = req.getSession();
         for(String key : valuer.keySet()) {
             req.setAttribute(key, valuer.get(key));
+        }
+        for(String key :session_model.keySet()){
+            session.setAttribute(key, session_model.get(key));
         }
         RequestDispatcher dispatcher = req.getRequestDispatcher(nomjs.getnompage());
         dispatcher.forward(req, res);
     }
-    
+    public void sous_redirecte(Object object_cl,Urlannotation annotation_method,HttpServletRequest req, HttpServletResponse res,Method method)throws Exception,ServletException, IOException{
+        PrintWriter out = res.getWriter();
+        if(method.getParameterCount()>0){
+            Object[]o = alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out);
+            ModelView m =(ModelView )method.invoke(object_cl,o);
+            redirecte(m ,req,res);
+        }else{
+            ModelView m = (ModelView )method.invoke(object_cl, (Object[])null);
+            out.println(m.getnompage());
+            redirecte( m, req,res);
+        }
+    }
     public void methode_class(String indexmap,Class  c,HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException{
         PrintWriter out = res.getWriter();
         for(Method method :c.getDeclaredMethods()){
@@ -149,25 +179,22 @@ public class FrontServlet extends HttpServlet{
                 if(method.getName().compareTo(MappingUrls.get(indexmap).getMethod())==0){
                     Urlannotation annotation_method=method.getAnnotation(Urlannotation.class);
                     Object object_cl=set_atribue_class(singleton(c,out),req,res);
-                    if(method.getReturnType()==ModelView.class){
-                        
-                        if(method.getParameterCount()>0){
-                            ModelView m =(ModelView )method.invoke(object_cl,alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out));
-                            redirecte(m ,req,res);
+                    if(method.isAnnotationPresent(Authannotation.class)){
+                        Authannotation authentification=method.getAnnotation(Authannotation.class);
+                        String s=(String)req.getSession().getAttribute(sessionprofile);
+                        out.println("no auth");
+                        if(authentification.profil().compareTo(s)==0){
+                            sous_redirecte(object_cl,annotation_method,req,res,method);
                         }else{
-                            ModelView m = (ModelView )method.invoke(object_cl, (Object[])null);
-                            redirecte( m, req,res);
+                            throw new SecurityException("profile non autorise pour cette fonction");
                         }
                     }else{
-                        if(method.getParameterCount()>0){
-                            method.invoke(object_cl,alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out));
-                        }else{
-                            method.invoke(object_cl, (Object[])null);
-                        }
+                       
+                        sous_redirecte(object_cl,annotation_method,req,res,method);
                     }
                 }
             } catch (Exception e) {
-                System.out.println(e);
+                out.println(e);
             }
         }
     }
@@ -184,7 +211,7 @@ public class FrontServlet extends HttpServlet{
                         resulta[i] = (Double) valide_double(req.getParameter(nomparametre[i]));
                     }
                     else if(parametre[i]==String.class){
-                        resulta[i] = req.getParameter(nomparametre[i]);
+                        resulta[i] =(String) req.getParameter(nomparametre[i]);
                     }
                     else if(parametre[i]==Date.class){
                         resulta[i] =(Date) string_to_objet(req.getParameter(nomparametre[i]),out);
