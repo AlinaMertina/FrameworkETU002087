@@ -34,6 +34,13 @@ public class FrontServlet extends HttpServlet{
     String redirectionConnectfalse;
     HashMap<String,Mapping> MappingUrls ;
     HashMap<String,Object> Singleton;
+    HashMap<String ,Object> sessionServelette=new HashMap<String ,Object>();
+    public void setsessionServelette(String nom,Object o){
+        sessionServelette.put(nom, o);
+    }
+    public HashMap<String ,Object> getsessionServelette(){
+        return sessionServelette;
+    }
 
     public void init() throws ServletException {
         nompakage=this.getInitParameter("racine_D");
@@ -74,6 +81,7 @@ public class FrontServlet extends HttpServlet{
             }
         
     }
+    
     public void resate(Object o){
         Class c=o.getClass();
         try {
@@ -161,7 +169,8 @@ public class FrontServlet extends HttpServlet{
         }
         for(String key :session_model.keySet()){ 
             out.println("classe non authentifier");
-            session.setAttribute(key, session_model.get(key));
+            session.setAttribute(key,session_model.get(key));
+            setsessionServelette(key,session_model.get(key));
         }
         RequestDispatcher dispatcher = req.getRequestDispatcher(nomjs.getnompage());
         //Verificatoin de la connection si la connection est vrais 
@@ -182,17 +191,35 @@ public class FrontServlet extends HttpServlet{
         }
         
     }
+    public void resateSession(HashMap<String,Object> sessionModif,PrintWriter out,HttpServletRequest req){
+        for(String key : sessionModif.keySet()) {
+            setsessionServelette(key, sessionModif.get(key));
+            // out.println(key+" "+(String)sessionModif.get(key));
+            req.getSession().setAttribute(key,sessionModif.get(key));
+        }
+    }
     public void sous_redirecte(Object object_cl,Urlannotation annotation_method,HttpServletRequest req, HttpServletResponse res,Method method)throws Exception,ServletException, IOException{
         PrintWriter out = res.getWriter();
         int caspossible=-1;
         ModelView m=new ModelView();
+        if(method.isAnnotationPresent(Sessionannotation.class)){
+            Method met = object_cl.getClass().getMethod("setSession", new HashMap<String,Object>().getClass());
+            met.invoke(object_cl, getsessionServelette());
+        }
         if(method.getParameterCount()>0){
             Object[]o = alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out);
             m =(ModelView )method.invoke(object_cl,o);
         }else{
             m = (ModelView )method.invoke(object_cl, (Object[])null);
         }
-
+        //resate session apres appelle fonction avec annothation Sessionannotation
+        if(method.isAnnotationPresent(Sessionannotation.class)){
+            Method met1 = object_cl.getClass().getMethod("getSession", new Class[0]);
+            Object[] t=null;
+            HashMap<String,Object> sessionModif= (HashMap<String,Object>) met1.invoke(object_cl, t);
+            resateSession(sessionModif,out,req);
+        }
+        //resateSession(HashMap<String,Object> sessionModif);
         //1 Authentifier avec profile 2 Annother sans profile 3 sans anotation
         //mamantatra ni Cas possible n'le fonction soit:1cas:Misy Authentification avec profil ,Misy Authentification tsisy profile,Tsimisy Authentification
         if(method.isAnnotationPresent(Authannotation.class)){

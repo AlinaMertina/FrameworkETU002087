@@ -9,11 +9,21 @@ import etu002087.framework.Set_value_jspannotation;
 import etu002087.framework.FileUpload;
 import etu002087.framework.Scopeannotation;
 import etu002087.framework.Authannotation;
+import etu002087.framework.Sessionannotation;
+import java.util.HashMap;
+
 
 
 @Scopeannotation(indication="singleton")
 public class Login { //Identification du membre et ajout du profile dans un session
     String profile;
+    HashMap<String,Object> session;
+    public void setSession(HashMap<String,Object> s){
+        session=s;
+    }
+    public HashMap<String,Object> getSession(){
+        return session;
+    }
     @Set_value_jspannotation(nom_atribue="profile")
     public void setprofile(String p){
         profile=p;
@@ -55,4 +65,14 @@ public class Login { //Identification du membre et ajout du profile dans un sess
         return model;
     }
 
+    @Urlannotation(index = "sessionmodif",nomparametre = {})
+    @Sessionannotation()
+    @Authannotation(profil = "")
+    public ModelView Usesession(){
+        getSession().put("profil","User");
+        ModelView model = new ModelView();
+        model.setnompage("Accuille.jsp");
+        return model;
+    }
+    
 }
