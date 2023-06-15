@@ -3,6 +3,8 @@ import java.io.*;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.HttpSession;
+
 import java.lang.String;
 import java.lang.reflect.*;
 import java.rmi.server.ObjID;
@@ -13,7 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.regex.Pattern;
-import jakarta.servlet.http.HttpSession;
+
 import javax.print.DocFlavor.STRING;
 
 import java.util.regex.Matcher;
@@ -29,6 +31,7 @@ public class FrontServlet extends HttpServlet{
     String nompakage;
     String sessionname;
     String sessionprofile;
+    String redirectionConnectfalse;
     HashMap<String,Mapping> MappingUrls ;
     HashMap<String,Object> Singleton;
 
@@ -37,6 +40,7 @@ public class FrontServlet extends HttpServlet{
         baseurl=this.getInitParameter("base_url_site");//definition de la base url de l'aplication dans le web.xml
         sessionname=this.getInitParameter("connection");
         sessionprofile=this.getInitParameter("profil");
+        redirectionConnectfalse=this.getInitParameter("UrlRedirection");
         //alimentation de l'attribut MappingUrls
         MappingUrls= new HashMap<String,Mapping>();
         Singleton = new HashMap<String,Object>();
@@ -147,30 +151,67 @@ public class FrontServlet extends HttpServlet{
             return null;
         } 
     }
-    public void redirecte(ModelView nomjs ,HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException{
+    public void redirecte(ModelView nomjs ,HttpServletRequest req, HttpServletResponse res,int caspossible)throws ServletException, IOException ,Exception{ 
+        PrintWriter out=res.getWriter();
         HashMap<String,Object> valuer = nomjs.getItem();
         HashMap<String,Object> session_model= nomjs.getsession();
         HttpSession session = req.getSession();
         for(String key : valuer.keySet()) {
             req.setAttribute(key, valuer.get(key));
         }
-        for(String key :session_model.keySet()){
+        for(String key :session_model.keySet()){ 
+            out.println("classe non authentifier");
             session.setAttribute(key, session_model.get(key));
         }
         RequestDispatcher dispatcher = req.getRequestDispatcher(nomjs.getnompage());
-        dispatcher.forward(req, res);
+        //Verificatoin de la connection si la connection est vrais 
+        if(caspossible==2){
+            if(req.getSession().getAttribute(sessionname)!=null){
+                if((Boolean)req.getSession().getAttribute(sessionname)==false){
+                    dispatcher = req.getRequestDispatcher(redirectionConnectfalse);
+                    dispatcher.forward(req, res);
+                }else{
+                    dispatcher.forward(req, res);
+                }
+            }else{
+                throw new Exception("Non connecter");
+            }
+        }else{
+            //pour les fonction sans authetification
+            dispatcher.forward(req, res);
+        }
+        
     }
     public void sous_redirecte(Object object_cl,Urlannotation annotation_method,HttpServletRequest req, HttpServletResponse res,Method method)throws Exception,ServletException, IOException{
         PrintWriter out = res.getWriter();
+        int caspossible=-1;
+        ModelView m=new ModelView();
         if(method.getParameterCount()>0){
             Object[]o = alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out);
-            ModelView m =(ModelView )method.invoke(object_cl,o);
-            redirecte(m ,req,res);
+            m =(ModelView )method.invoke(object_cl,o);
         }else{
-            ModelView m = (ModelView )method.invoke(object_cl, (Object[])null);
-            out.println(m.getnompage());
-            redirecte( m, req,res);
+            m = (ModelView )method.invoke(object_cl, (Object[])null);
         }
+
+        //1 Authentifier avec profile 2 Annother sans profile 3 sans anotation
+        //mamantatra ni Cas possible n'le fonction soit:1cas:Misy Authentification avec profil ,Misy Authentification tsisy profile,Tsimisy Authentification
+        if(method.isAnnotationPresent(Authannotation.class)){
+            Authannotation authentification=method.getAnnotation(Authannotation.class);
+            String s=(String)req.getSession().getAttribute(sessionprofile);
+            //si avec Authentification mais sans profile
+            if(authentification.profil().compareTo("")==0){
+                caspossible=2;
+                redirecte(m ,req,res,2);
+            }else {
+                if(authentification.profil().compareTo(s)==0){
+                    redirecte(m ,req,res,2);
+                }else{
+                    throw new SecurityException("profile non autorise pour cette fonction");
+                }
+            }
+        }else{
+            redirecte(m ,req,res,1);
+        }        
     }
     public void methode_class(String indexmap,Class  c,HttpServletRequest req, HttpServletResponse res)throws ServletException, IOException{
         PrintWriter out = res.getWriter();
@@ -179,19 +220,7 @@ public class FrontServlet extends HttpServlet{
                 if(method.getName().compareTo(MappingUrls.get(indexmap).getMethod())==0){
                     Urlannotation annotation_method=method.getAnnotation(Urlannotation.class);
                     Object object_cl=set_atribue_class(singleton(c,out),req,res);
-                    if(method.isAnnotationPresent(Authannotation.class)){
-                        Authannotation authentification=method.getAnnotation(Authannotation.class);
-                        String s=(String)req.getSession().getAttribute(sessionprofile);
-                        out.println("no auth");
-                        if(authentification.profil().compareTo(s)==0){
-                            sous_redirecte(object_cl,annotation_method,req,res,method);
-                        }else{
-                            throw new SecurityException("profile non autorise pour cette fonction");
-                        }
-                    }else{
-                       
-                        sous_redirecte(object_cl,annotation_method,req,res,method);
-                    }
+                    sous_redirecte(object_cl,annotation_method,req,res,method);
                 }
             } catch (Exception e) {
                 out.println(e);

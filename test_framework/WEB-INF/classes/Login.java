@@ -33,6 +33,9 @@ public class Login { //Identification du membre et ajout du profile dans un sess
         model.setnompage("Accuille.jsp");
         if(motpasse.compareTo("Mertina")==0){
             model.addsession("profil", profile);
+            model.addsession("isconnected", true);
+        }else{
+            model.addsession("isconnected", false);
         }
         return model;
     }
@@ -43,5 +46,13 @@ public class Login { //Identification du membre et ajout du profile dans un sess
         model.setnompage("DeleteUser.jsp");
         return model;
     }
-    
+
+    @Urlannotation(index = "sansprofile",nomparametre = {})
+    @Authannotation(profil = "")
+    public ModelView deleteUsertest(){
+        ModelView model = new ModelView();
+        model.setnompage("DeleteUser.jsp");
+        return model;
+    }
+
 }

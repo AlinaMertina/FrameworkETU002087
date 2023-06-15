@@ -36,6 +36,12 @@
             <param-value>profil</param-value>
             <description>nom du session qui va contenir le typde de profile de l'utilisateur</description>
         </init-param>
+        <init-param>
+            <param-name>UrlRedirection</param-name>
+            <param-value>Login.jsp</param-value>
+            <description>nom du session qui va contenir le typde de profile de l'utilisateur</description>
+        </init-param>
+
     </servlet>
 
     <servlet-mapping>

@@ -9,8 +9,9 @@
 </head>
 <body>
     <h1> Delete USER</h1>
-    <form action="delete">
-        <input type="submit" value="valider"/>
-    </form>
+    <a href="delete"> Delete User</a>
+    <a href="sansprofile"> TEST</a>
+
+    
 </body>
 </html> 
