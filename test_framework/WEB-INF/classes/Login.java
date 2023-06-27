@@ -11,6 +11,7 @@ import etu002087.framework.Scopeannotation;
 import etu002087.framework.Authannotation;
 import etu002087.framework.Sessionannotation;
 import java.util.HashMap;
+import etu002087.framework.Gsonannotation;
 
 
 
@@ -83,5 +84,10 @@ public class Login { //Identification du membre et ajout du profile dans un sess
             model.setIsjson(true);
             return model;
     }   
+    @Urlannotation(index = "testtendryjson",nomparametre = {})
+    @Gsonannotation()
+    public Object testajson(){
+        return "String";
+    }
     
 }

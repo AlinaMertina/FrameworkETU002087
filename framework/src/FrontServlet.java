@@ -208,19 +208,34 @@ public class FrontServlet extends HttpServlet{
             req.getSession().setAttribute(key,sessionModif.get(key));
         }
     }
+    public void objectToJson(Object o,PrintWriter out ){
+        Gson gson = new Gson();
+        String json = gson.toJson(o);
+        out.println(json);
+    }
     public void sous_redirecte(Object object_cl,Urlannotation annotation_method,HttpServletRequest req, HttpServletResponse res,Method method)throws Exception,ServletException, IOException{
         PrintWriter out = res.getWriter();
         int caspossible=-1;
         ModelView m=new ModelView();
+        Object returntype = new Object();
+
         if(method.isAnnotationPresent(Sessionannotation.class)){
             Method met = object_cl.getClass().getMethod("setSession", new HashMap<String,Object>().getClass());
             met.invoke(object_cl, getsessionServelette());
         }
-        if(method.getParameterCount()>0){
+        if(method.getParameterCount()>0 ){
             Object[]o = alimentation_parametre_fonction(method,annotation_method.nomparametre(),req,out);
-            m =(ModelView )method.invoke(object_cl,o);
-        }else{
-            m = (ModelView )method.invoke(object_cl, (Object[])null);
+            if(method.getReturnType()==ModelView.class){
+                m =(ModelView )method.invoke(object_cl,o);
+            }else{
+                returntype = method.invoke(object_cl,o);
+            }
+        }else {
+            if(method.getReturnType()==ModelView.class){
+                m = (ModelView )method.invoke(object_cl, (Object[])null);
+            }else{
+                returntype = method.invoke(object_cl, (Object[])null);
+            }
         }
         //resate session apres appelle fonction avec annothation Sessionannotation
         if(method.isAnnotationPresent(Sessionannotation.class)){
@@ -238,15 +253,28 @@ public class FrontServlet extends HttpServlet{
             //si avec Authentification mais sans profile
             if(authentification.profil().compareTo("")==0){
                 caspossible=2;
+                //json Tendry
+                if(method.isAnnotationPresent(Gsonannotation.class)){
+                    objectToJson(returntype,out );
+                    return ;
+                }
                 redirecte(m ,req,res,2);
             }else {
                 if(authentification.profil().compareTo(s)==0){
+                    if(method.isAnnotationPresent(Gsonannotation.class)){
+                        objectToJson(returntype,out );
+                        return ;
+                    }
                     redirecte(m ,req,res,2);
                 }else{
                     throw new SecurityException("profile non autorise pour cette fonction");
                 }
             }
         }else{
+            if(method.isAnnotationPresent(Gsonannotation.class)){
+                objectToJson(returntype,out );
+                return ;
+            }
             redirecte(m ,req,res,1);
         }        
     }
