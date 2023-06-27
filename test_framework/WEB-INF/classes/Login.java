@@ -74,5 +74,14 @@ public class Login { //Identification du membre et ajout du profile dans un sess
         model.setnompage("Accuille.jsp");
         return model;
     }
+    @Urlannotation(index = "testjson",nomparametre = {})
+    public etu002087.framework.ModelView testjson(){
+            ModelView model = new ModelView();
+            model.addItem("nom", "TOTO");
+            model.addItem("Prenom", "Mertina Claudie");
+            model.addItem("age", 17);
+            model.setIsjson(true);
+            return model;
+    }   
     
 }

@@ -4,7 +4,6 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpSession;
-
 import java.lang.String;
 import java.lang.reflect.*;
 import java.rmi.server.ObjID;
@@ -19,6 +18,8 @@ import java.util.regex.Pattern;
 import javax.print.DocFlavor.STRING;
 
 import java.util.regex.Matcher;
+import com.google.gson.Gson;
+
 
 
 @MultipartConfig(
@@ -164,6 +165,15 @@ public class FrontServlet extends HttpServlet{
         HashMap<String,Object> valuer = nomjs.getItem();
         HashMap<String,Object> session_model= nomjs.getsession();
         HttpSession session = req.getSession();
+        //mijeri oe avadika json ilay izi sa tsia 
+        Method isjon = nomjs.getClass().getMethod("getIsjson",new Class[0]);
+        //invocation de la fonction 
+            if((Boolean) isjon.invoke(nomjs, (Object[])null)==true){
+                Gson gson = new Gson();
+                String json = gson.toJson(nomjs.getItem());
+                out.println(json);
+                return ;
+            }
         for(String key : valuer.keySet()) {
             req.setAttribute(key, valuer.get(key));
         }
@@ -447,3 +457,4 @@ public class FrontServlet extends HttpServlet{
         return date;
     }
 }
+

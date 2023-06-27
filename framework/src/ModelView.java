@@ -5,6 +5,13 @@ public class ModelView{
    String nompage ;
    HashMap<String,Object> Attribu=new HashMap<String,Object>();
    HashMap<String,Object> session=new HashMap<String,Object>();
+   Boolean isjson=false;
+   public void setIsjson(Boolean t){
+      isjson=t;
+   }
+   public Boolean getIsjson(){
+      return isjson;
+   }
    public void setnompage(String nom){
     nompage=nom;
    }
