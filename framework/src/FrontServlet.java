@@ -160,10 +160,25 @@ public class FrontServlet extends HttpServlet{
             return null;
         } 
     }
+    //Supprimer une session specifique
+    public void removeSession(PrintWriter out,HttpServletRequest requete,String nom){
+        // tsi maka ni session rehetra izay mi existe eto fa togna de alaina ilay session de raha tsisi de atelina ao anatina exception
+        try {
+            HttpSession session=requete.getSession();
+            session.removeAttribute(nom);
+            getsessionServelette().remove(nom);
+        } catch (Exception e) {
+            out.println(e);
+        }
+    }
     public void redirecte(ModelView nomjs ,HttpServletRequest req, HttpServletResponse res,int caspossible)throws ServletException, IOException ,Exception{ 
         PrintWriter out=res.getWriter();
         HashMap<String,Object> valuer = nomjs.getItem();
+        // mametraka ni session napetraka tao anatin'ny model vie
         HashMap<String,Object> session_model= nomjs.getsession();
+        //maka ni liste ni session ho fafana raha misi
+        List<String> sessionremove = nomjs.getDeleteSession();
+
         HttpSession session = req.getSession();
         //mijeri oe avadika json ilay izi sa tsia 
         Method isjon = nomjs.getClass().getMethod("getIsjson",new Class[0]);
@@ -182,6 +197,16 @@ public class FrontServlet extends HttpServlet{
             session.setAttribute(key,session_model.get(key));
             setsessionServelette(key,session_model.get(key));
         }
+        //Delete session on veut supprimer la session Sprint 15
+        if(nomjs.getsetInvalidateSession()==true){
+            session.invalidate();
+        }
+        if(nomjs.getDeleteSession().size()>0){
+            for(String nom : nomjs.getDeleteSession()){
+                removeSession(out,req,nom);
+            }
+        }
+        //fin Sprint 15
         RequestDispatcher dispatcher = req.getRequestDispatcher(nomjs.getnompage());
         //Verificatoin de la connection si la connection est vrais 
         if(caspossible==2){
